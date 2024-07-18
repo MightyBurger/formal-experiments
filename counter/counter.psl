@@ -1,0 +1,53 @@
+vunit i_counter(counter(rtl))
+{
+
+    default clock is rising_edge(clk);
+
+    signal fv_count_old: unsigned(GWIDTH - 1 downto 0) := (others => '0');
+
+    check_proc: process(clk)
+    begin
+        if rising_edge(clk) then
+            fv_count_old <= count; 
+        end if;
+    end process;
+
+
+    assume {rst};
+
+    assert always {rst} |=> {count = 0};
+
+    -- Bounds verification
+
+    assert always count <= CMAX;
+
+    -- Increment verification
+
+    assert always {incr and full and not rst} |=>
+        {stable(count)};
+
+
+    increment_works: assert always {incr and not decr and not full and not rst} |=>
+        {count = fv_count_old + 1};
+
+    -- Decrement verification
+
+    assert always {decr and empty and not rst} |=> {stable(count)};
+
+    assert always {decr and not empty and not incr and not rst} |=> 
+        {count = fv_count_old - 1};
+    
+
+    -- Stable verification
+
+    assert always {not incr and not decr and not rst} |=> {stable(count)};
+    assert always {incr and decr and not rst} |=> {stable(count)};
+
+    -- Output signal verification
+
+    assert always {count = 0} |-> {empty};
+    assert always {not count = 0} |-> {not empty};
+
+    assert always {count = CMAX} |-> {full};
+    assert always {not count = CMAX} |-> {not full};
+}

@@ -1,0 +1,17 @@
+[tasks]
+bmc
+
+[options]
+bmc: mode bmc
+bmc: depth 20
+
+[engines]
+smtbmc
+
+[script]
+ghdl --std=08 -gGWIDTH=3 -gCMAX=7 counter.vhd counter.psl -e counter
+prep -top counter
+
+[files]
+counter.psl
+counter.vhd
