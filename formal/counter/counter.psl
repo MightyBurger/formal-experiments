@@ -19,8 +19,6 @@ vunit i_counter(counter(rtl))
 
     -- Verify count behavior
 
-    f_count_bounded: assert always count <= CMAX;
-
     f_increase: assert always
         (incr = '1' and decr = '0' and full = '0' |=> count = prev(count) + 1)
         abort reset;
@@ -36,11 +34,22 @@ vunit i_counter(counter(rtl))
     f_stable2: assert always
         (incr = '1' and decr = '1' |=> stable(count))
         abort reset;
+
+    -- I need {true} because it craps out if it tries this assertion on the
+    -- first clock cycle ... Is there a better way?
+
+    f_no_overflow_underflow: assert always 
+        ({true} |=> 
+            to_integer(count) = to_integer(prev(count))
+            or to_integer(count) = to_integer(prev(count)) + 1
+            or to_integer(count) = to_integer(prev(count)) - 1
+            )
+            abort reset;
     
     -- Verify output flags
 
     f_empty: assert always (count = 0 <-> empty = '1');
-    f_full: assert always (count = CMAX <-> full = '1');
+    f_full: assert always (count = 2**GWIDTH - 1 <-> full = '1');
 
     ------------------------------------------------------------------ Covers --
 
@@ -50,6 +59,7 @@ vunit i_counter(counter(rtl))
         reset = '1';
         reset = '0' [*];
         reset = '0' and full = '1';
+        reset = '0' [*];
         reset = '0' [*];
         reset = '0' and empty = '1'
     };
