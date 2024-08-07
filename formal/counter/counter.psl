@@ -1,0 +1,57 @@
+vunit i_counter(counter(rtl))
+{
+
+    ---------------------------------------------------------------- Preamble --
+
+    default clock is rising_edge(clk);
+
+    assume {rst_n = '0'};
+    assume {arst_n = '0'};
+
+    -- Shortcut to make abort statements less wordy
+    -- (my modules require both rst_n and arst_n)
+    signal reset: std_logic;
+    reset <= (not rst_n) or (not arst_n);
+
+    -------------------------------------------------------------- Assertions --
+
+    f_reset: assert always {reset} |=> {count = 0};
+
+    -- Verify count behavior
+
+    f_count_bounded: assert always count <= CMAX;
+
+    f_increase: assert always
+        (incr = '1' and decr = '0' and full = '0' |=> count = prev(count) + 1)
+        abort reset;
+
+    f_decrease: assert always
+        (decr = '1' and incr = '0' and empty = '0' |=> count = prev(count) - 1)
+        abort reset;
+    
+    f_stable1: assert always
+        (incr = '0' and decr = '0' |=> stable(count))
+        abort reset;
+
+    f_stable2: assert always
+        (incr = '1' and decr = '1' |=> stable(count))
+        abort reset;
+    
+    -- Verify output flags
+
+    f_empty: assert always (count = 0 <-> empty = '1');
+    f_full: assert always (count = CMAX <-> full = '1');
+
+    ------------------------------------------------------------------ Covers --
+
+    -- Exercise the counter
+
+    f_cover: cover {
+        reset = '1';
+        reset = '0' [*];
+        reset = '0' and full = '1';
+        reset = '0' [*];
+        reset = '0' and empty = '1'
+    };
+
+}

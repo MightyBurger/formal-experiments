@@ -1,17 +1,19 @@
 [tasks]
-bmc
+prove
+cover
 
 [options]
-bmc: mode bmc
-bmc: depth 20
+prove: mode prove
+prove: depth 10
+cover: mode cover
 
 [engines]
-smtbmc
+smtbmc yices
 
 [script]
 ghdl --std=08 -gGWIDTH=3 -gCMAX=7 counter.vhd counter.psl -e counter
 prep -top counter
 
 [files]
+../../hdl/counter.vhd
 counter.psl
-counter.vhd

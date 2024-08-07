@@ -9,7 +9,8 @@ generic (
 );
 port (
     clk: in std_logic;
-    rst: in std_logic;
+    rst_n: in std_logic;
+    arst_n: in std_logic;
 
     incr: in std_logic;
     decr: in std_logic;
@@ -24,10 +25,12 @@ architecture rtl of counter is
 
 begin
 
-    process(clk)
+    process(clk, arst_n)
     begin
-        if rising_edge(clk) then
-            if rst = '1' then
+        if arst_n = '0' then
+            count <= (others => '0');
+        elsif rising_edge(clk) then
+            if rst_n = '0' then
                 count <= (others => '0');
             else
                 if incr = '1' and decr = '0' and count < CMAX then
