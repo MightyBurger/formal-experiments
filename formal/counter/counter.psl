@@ -51,6 +51,11 @@ vunit i_counter(counter(rtl))
     f_empty: assert always (count = 0 <-> empty = '1');
     f_full: assert always (count = 2**GWIDTH - 1 <-> full = '1');
 
+    -- Why does this pass basecase?
+    -- At least it fails induction.
+
+    --f_this_should_fail: assert always (full -> not full);
+
     ------------------------------------------------------------------ Covers --
 
     -- Exercise the counter
